@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+  <head>
+       <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.2.8/d3.min.js" type="text/JavaScript"></script>
+     <meta charset="UTF-8"> 
+    </head>
+  <body>
+    <div id="graphic"></div>
+    <svg style="width:500px;height:500px;">
+    </svg>
+    <script>
+
+ 
+//set margins
+  var margin = {
+    top: 30,
+    right: 20,
+    bottom: 60,
+    left: 80
+  };
+
+  var width = 500 - margin.left - margin.right,
+      height = 500 - margin.top - margin.bottom;
+
+  d3.csv("Kaggle-modified.csv")
+    .row(function(d){
+    var durArr = d.duration.split(" ") // split by space character
+    var initialArr = d.creator.split(" ")// until end of string
+    var newinitials = initialArr.map((name)=> name[0]).join('')
+    return {duration: durArr[0], rating: d.rating, initials: newinitials}
+  })
+    .get(data => dataViz(data)); 
+
+function dataViz(myData){ 
+  var svg = d3.select("#graphic").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+  var yLower = d3.min(myData, d => parseFloat(d.rating));
+  var xLower = d3.min(myData, d => parseFloat(d.duration));
+  var xUpper = d3.max(myData, d => parseFloat(d.duration));
+  var yScale = d3.scaleLinear().domain([yLower-.01,5.01]).range([width, 0]),
+    xScale = d3.scaleLinear().domain([xLower-1, xUpper+1]).range([0, height]);
+
+// Title
+  svg.append('text')
+    .attr('x', width/2 + 6)
+    .attr('y', -10)
+    .attr('text-anchor', 'middle')
+    .style('font-family', 'Helvetica')
+    .style('font-size', "18px")
+    .text('Relationship between Rating and Course Duration');
+        
+// x label
+  svg.append('text')
+    .attr('x', width/2 + 50)
+    .attr('y', height+40)
+    .attr('text-anchor', 'middle')
+    .style('font-family', 'Helvetica')
+    .style('font-size', "12px")
+    .text('Course Duration (hours)');
+        
+// Y label
+  svg.append('text')
+    .attr('text-anchor', 'middle')
+    .attr('transform', 'translate(-40,' + height/2 + ')rotate(-90)')
+    .style('font-family', 'Helvetica')
+    .style('font-size', "12px")
+    .text('Average Rating');
+
+  var xAxisGrid = d3.axisBottom(xScale).tickSizeInner(-height).tickFormat('').ticks(7);
+  var yAxisGrid = d3.axisLeft(yScale).tickSizeInner(-width - 10).tickFormat('').ticks(10);
+
+// Create grids
+  svg.append('g')
+    .attr('class', 'x axis-grid')
+    .attr('transform', 'translate(0,' + height + ')')
+    .attr("stroke-opacity", 0.5)
+    .attr("stroke-dasharray", "2,2")
+    .call(xAxisGrid);
+      
+  svg.append('g')
+    .attr('class', 'y axis-grid')
+    .attr("stroke-opacity", 0.5)
+    .attr("stroke-dasharray", "2,2")
+    .call(yAxisGrid);
+
+// Append axes
+  svg.append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(xScale));
+  svg.append("g")
+    .call(d3.axisLeft(yScale));
+    
+
+// Append dots
+  svg.append('g')
+    .selectAll("dot")
+    .data(myData)
+    .enter()
+    .append("circle")
+      .attr("cx", d => xScale(parseFloat(d.duration))-100)
+      .attr("cy", d  => yScale(parseFloat(d.rating))-100)
+      .attr("r", 5)
+      .attr("transform", "translate(" + 100 + "," + 100 + ")")
+      .style("fill", "#CC0000");
+          
+
+//Append initials
+  svg.append("g")
+    .selectAll("init")
+    .data(myData)
+    .enter()
+    .append("text")
+      .attr("x", d => xScale(parseFloat(d.duration))-100)
+      .attr("y", d => yScale(parseFloat(d.rating))-100)
+      .attr("transform", "translate(" + 100 + "," + 100 + ")")
+      .attr("dx", ".60em")
+      .attr("dy", ".90em")
+      .style('font-size', '10px')
+      .text(d => d.initials);
+         
+};
+
+    </script>
+  </body>
+</html>

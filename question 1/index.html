@@ -1,0 +1,156 @@
+<!doctype html>
+
+<html>
+  <head>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    </head>
+  <body>
+    <div id="graphic"> 
+    </div>
+     <button onclick="enterData()">Go Back</button> 
+     <button onclick="exitData()">Remove 3 Lowest</button>
+    <script>
+
+   var studentData = [
+        {Student: 1,  marks: 6},
+        {Student: 2,  marks: 100},
+        {Student: 3,  marks: 90},
+        {Student: 4,  marks: 55},
+        {Student: 5,  marks: 83},
+        {Student: 6,  marks: 88},
+        {Student: 7,  marks: 91},
+        {Student: 8,  marks: 92},
+        {Student: 9,  marks: 67},
+        {Student: 10, marks: 73}
+      ];
+
+      
+// Define data
+  sortedData = studentData.sort(function (a, b) {
+            return d3.ascending(a.marks, b.marks);
+            })
+
+  studentData = studentData.sort(function (a, b) {
+            return d3.descending(a.marks, b.marks);
+            })
+
+
+// Set borders
+  var margin = {
+            top: 25,
+            right: 20,
+            bottom: 40,
+            left: 100
+        };
+
+
+  var width = 500 - margin.left - margin.right,
+      height = 500 - margin.top - margin.bottom;
+
+  var svg = d3.select("#graphic").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");  
+
+  var xMax = d3.max(studentData, d => d.marks);
+  var yExtent = d3.extent(studentData, d => d.Student);
+  var xScale = d3.scaleLinear().domain([0,xMax]).range([0,width]);
+  var yScale = d3.scaleBand()
+    .domain(studentData.map(function(d) {return d.Student;}))
+    .range([0, height])
+    .padding(0.25); //spaces between bars
+
+//create rectangles
+  d3.select("svg")
+    .selectAll("rect")
+    .data(studentData)
+    .enter()
+    .append("rect")
+    .attr("height", yScale.bandwidth())
+    .attr("width", d => xScale(d.marks))
+    .attr("y", d => yScale(d.Student) + 25)
+    .attr("x", xScale(0)+100)
+    .attr("opacity", 0.25)
+    .style("fill", "#FE9922")
+    .style("stroke", "#9A8B7A")
+    .style("stroke-width", "1px");
+
+// Create x axis          
+  xAxis = d3.axisBottom()
+    .scale(xScale)
+
+  d3.select("svg").append("g")
+    .attr("transform", "translate(100, " + 460  + ")")
+    .call(xAxis.ticks(10).tickValues([10,20,30,40,50,60,70,80,90,100]).tickSizeInner(-height));
+
+  svg.append("g")
+    .selectAll("text") 
+    .style("text-anchor", "end")
+    .attr("dx", ".8em")
+    .style("font-size", "15px") 
+    .attr("dy", ".75em");          
+
+ // Create y-axis 
+  yAxis = d3.axisLeft()
+    .scale(yScale)
+    .tickSizeInner(0)
+    .tickSizeOuter(0)
+      
+  svg.append("g")
+    .attr("transform", "translate(-3, 0)")
+    .call(yAxis);
+
+// Title for x-axis 
+
+	svg.append("text")     
+    .attr("x", 200 )
+    .attr("y", height+30 )
+    .style("text-anchor", "middle")
+    .text("Marks");
+
+// Title for y-axis
+  svg.append('text')
+    .attr('text-anchor', 'middle')
+    .attr('transform', 'translate(-30,' + height/2 + ')rotate(-90)')
+    .text('Student Number');
+
+// Title for Chart
+  svg.append('text')
+    .attr('x', width/2 + 6)
+    .attr('y', -10)
+    .attr('text-anchor', 'middle')
+    .style('font-size', '20px')
+    .style("font-weight", "bold")
+    .text('Student Marks');
+
+  function enterData() {
+    let data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    d3.select("svg")
+      .selectAll("rect")
+      .data(studentData)
+      .enter()
+      .append("rect")
+      .attr("height", yScale.bandwidth())
+      .attr("width", d => xScale(d.marks))
+      .attr("y", d => yScale(d.Student) + 25)
+      .attr("x", xScale(0)+100)
+      .attr("opacity", 0.25)
+        .style("fill", "#FE9922")
+        .style("stroke", "#9A8B7A")
+        .style("stroke-width", "1px");
+
+  }
+
+  function exitData() {
+    let data = [1,2,3,4,5,6,7]
+    d3.select("svg")
+      .selectAll("rect") 
+      .data(data)
+      .exit()
+      .remove();
+  }
+
+    </script>
+  </body>
+</html>
